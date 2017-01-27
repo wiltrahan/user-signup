@@ -32,7 +32,7 @@ class Signup(webapp2.RequestHandler):
 
     def get(self):
         signup_form = """
-        <form method="post">
+        <form action="/welcome" method="post">
             <table>
                 <tbody>
                     <tr>
@@ -77,10 +77,19 @@ class Signup(webapp2.RequestHandler):
         </form>
         """
         self.response.write(page_header + signup_form)
+
+
+class AddUser(webapp2.RequestHandler):
+
+    def post(self):
+        new_user = self.request.get("username")
+        content = "<h1> Welcome, " + new_user + "!</h1>"
+        self.response.write(content)
 # class MainHandler(webapp2.RequestHandler):
 #     def get(self):
 #         self.response.write(page_header)
 
 app = webapp2.WSGIApplication([
-    ('/', Signup)
+    ('/', Signup),
+    ('/welcome', AddUser)
 ], debug=True)
