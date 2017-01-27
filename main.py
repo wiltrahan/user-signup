@@ -16,17 +16,24 @@
 #
 import webapp2
 
+
 page_header = """
 <!DOCTYPE html>
 <html>
 <head>
     <title>User Signup</title>
+    <style type="text/css">
+      .label {text-align: right}
+      .error {color: red}
+    </style>
 </head>
 <body>
     <h1>Signup</h1>
 </body>
 </html>
 """
+
+
 
 class Signup(webapp2.RequestHandler):
 
@@ -77,6 +84,13 @@ class Signup(webapp2.RequestHandler):
         </form>
         """
         self.response.write(page_header + signup_form)
+
+    def post(self):
+        has_error = False
+        username = self.request.get('username')
+        password = self.request.get('password')
+        verify_password = self.request.get('verify')
+        email = self.request.get('email')
 
 
 class AddUser(webapp2.RequestHandler):
