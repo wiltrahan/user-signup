@@ -16,7 +16,7 @@
 #
 import webapp2
 import re
-
+import cgi
 
 page_header = """
 <!DOCTYPE html>
@@ -27,93 +27,124 @@ page_header = """
       .label {text-align: right}
       .error {color: red}
     </style>
+
 </head>
 <body>
     <h1>Signup</h1>
 </body>
 </html>
 """
+
+
+signup_form = """
+<form method="post">
+    <table>
+        <tbody>
+            <tr>
+                <td>
+                    <label for="username">Username</label>
+                </td>
+                <td>
+                    <input name="username" type="text" value="">
+                    <span class="error">%(username_error)s</span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="password">Password</label>
+                </td>
+                <td>
+                    <input name="password" type="password" value="">
+                    <span class="error">%(password_error)s</span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="verify">Verify Password</label>
+                </td>
+                <td>
+                    <input name="verify" type="password">
+                    <span class="error">%(verify_error)s</span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="email">Email (optional)</label>
+                </td>
+                <td>
+                    <input name="email" type="email" value="">
+                    <span class="error">%(email_error)s</span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <input type="submit">
+</form>
+"""
+content = page_header + signup_form
+
+
 USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
-PASS_RE = re.compile(r"^.{3,20}$")
-EMAIL_RE = re.compile(r"^[\S]+@[\S]+.[\S]+$")
-
 def valid_username(username):
-    return USER_RE.match(username)
+    return username and USER_RE.match(username)
 
+PASS_RE = re.compile(r"^.{3,20}$")
 def valid_password(password):
-    return PASS_RE.match(password)
-def valid_email(email):
-    return EMAIL_RE.match(email)
+    return password and PASS_RE.match(password)
 
-class Signup(webapp2.RequestHandler):
+EMAIL_RE  = re.compile(r'^[\S]+@[\S]+\.[\S]+$')
+def valid_email(email):
+    return not email or EMAIL_RE.match(email)
+
+def escape_html(s):
+    return cgi.escape(s, quote=True)
+
+
+class MainPage(webapp2.RequestHandler):
+
+    def write_form(self, error="", username_error="", password_error="",
+                   verify_error="", email_error=""):
+        self.response.out.write(content % {"error": error,
+                                           "username_error": escape_html(username_error),
+                                           "password_error": escape_html(password_error),
+                                           "verify_error": escape_html(verify_error),
+                                           "email_error": escape_html(email_error)})
 
     def get(self):
-        signup_form = """
-        <form action="/welcome" method="post">
-            <table>
-                <tbody>
-                    <tr>
-                        <td>
-                            <label for="username">Username</label>
-                        </td>
-                        <td>
-                            <input name="username" type="text" value required>
-                            <span class="error"></span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <label for="password">Password</label>
-                        </td>
-                        <td>
-                            <input name="password" type="password" value required>
-                            <span class="error"></span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <label for="verify">Verify Password</label>
-                        </td>
-                        <td>
-                            <input name="verify" type="password" value required>
-                            <span class="error"></span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <label for="email">Email (optional)</label>
-                        </td>
-                        <td>
-                            <input name="email" type="email" value required>
-                            <span class="error"></span>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            <input type="submit">
-        </form>
-        """
-        self.response.write(page_header + signup_form)
+        self.write_form()
+
 
     def post(self):
-        has_error = False
+
         username = self.request.get('username')
         password = self.request.get('password')
-        verify_password = self.request.get('verify')
+        verify = self.request.get('verify')
         email = self.request.get('email')
 
+        user_name = valid_username(username)
+        pass_word = valid_password(password)
+        val_email = valid_email(email)
+
+
+        if not user_name:
+            self.write_form(username_error ="Thats Not A Valid Username")
+        elif not pass_word:
+            self.write_form(password_error = "Thats Not A Valid Password")
+        elif password != verify:
+            self.write_form(verify_error = "Passwords Do Not Match")
+        elif not val_email:
+            self.write_form(email_error = "Not a Valid Email")
+        else:
+            self.redirect('/welcome?username=' + username)
 
 class AddUser(webapp2.RequestHandler):
 
-    def post(self):
-        new_user = self.request.get("username")
-        content = "<h1> Welcome, " + new_user + "!</h1>"
-        self.response.write(content)
-# class MainHandler(webapp2.RequestHandler):
-#     def get(self):
-#         self.response.write(page_header)
+    def get(self):
+        username = self.request.get('username')
+        welcome = "<h1> Welcome, " + username + "!</h1>"
+        self.response.out.write(welcome)
 
-app = webapp2.WSGIApplication([
-    ('/', Signup),
-    ('/welcome', AddUser)
-], debug=True)
+
+
+app = webapp2.WSGIApplication([('/', MainPage), ('/welcome', AddUser)],
+                             debug=True)
