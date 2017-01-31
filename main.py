@@ -45,7 +45,7 @@ signup_form = """
                     <label for="username">Username</label>
                 </td>
                 <td>
-                    <input name="username" type="text" value="">
+                    <input name="username" type="text" value="%(username)s">
                     <span class="error">%(username_error)s</span>
                 </td>
             </tr>
@@ -54,7 +54,7 @@ signup_form = """
                     <label for="password">Password</label>
                 </td>
                 <td>
-                    <input name="password" type="password" value="">
+                    <input name="password" type="password">
                     <span class="error">%(password_error)s</span>
                 </td>
             </tr>
@@ -72,7 +72,7 @@ signup_form = """
                     <label for="email">Email (optional)</label>
                 </td>
                 <td>
-                    <input name="email" type="email" value="">
+                    <input name="email" type="email" value="%(email)s">
                     <span class="error">%(email_error)s</span>
                 </td>
             </tr>
@@ -102,9 +102,10 @@ def escape_html(s):
 
 class MainPage(webapp2.RequestHandler):
 
-    def write_form(self, error="", username_error="", password_error="",
+    def write_form(self, username="", email="", username_error="", password_error="",
                    verify_error="", email_error=""):
-        self.response.out.write(content % {"error": error,
+        self.response.out.write(content % {"username": escape_html(username),
+                                           "email": escape_html(email),
                                            "username_error": escape_html(username_error),
                                            "password_error": escape_html(password_error),
                                            "verify_error": escape_html(verify_error),
@@ -127,13 +128,13 @@ class MainPage(webapp2.RequestHandler):
 
 
         if not user_name:
-            self.write_form(username_error ="Thats Not A Valid Username")
+            self.write_form(username_error = "Thats Not A Valid Username", username=username)
         elif not pass_word:
             self.write_form(password_error = "Thats Not A Valid Password")
         elif password != verify:
             self.write_form(verify_error = "Passwords Do Not Match")
         elif not val_email:
-            self.write_form(email_error = "Not a Valid Email")
+            self.write_form(email_error = "Not a Valid Email", username=username, email=email)
         else:
             self.redirect('/welcome?username=' + username)
 
