@@ -30,7 +30,9 @@ page_header = """
 
 </head>
 <body>
-    <h1>Signup</h1>
+    <h1>
+        <a href="/">Signup</a>
+    </h1>
 </body>
 </html>
 """
