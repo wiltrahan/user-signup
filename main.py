@@ -118,25 +118,33 @@ class MainPage(webapp2.RequestHandler):
 
 
     def post(self):
-
+        have_error = False
         username = self.request.get('username')
         password = self.request.get('password')
         verify = self.request.get('verify')
         email = self.request.get('email')
 
-        user_name = valid_username(username)
-        pass_word = valid_password(password)
-        val_email = valid_email(email)
+        params = dict(username = username,
+                      email = email)
 
+        if not valid_username(username):
+            params['username_error'] = "That's not a valid username."
+            have_error = True
 
-        if not user_name:
-            self.write_form(username_error = "Thats Not A Valid Username", username=username)
-        elif not pass_word:
-            self.write_form(password_error = "Thats Not A Valid Password")
+        if not valid_password(password):
+            params['password_error'] = "That wasn't a valid password."
+            have_error = True
         elif password != verify:
-            self.write_form(verify_error = "Passwords Do Not Match")
-        elif not val_email:
-            self.write_form(email_error = "Not a Valid Email", username=username, email=email)
+            params['verify_error'] = "Your passwords didn't match."
+            have_error = True
+
+        if not valid_email(email):
+            params['email_error'] = "That's not a valid email."
+            have_error = True
+
+        if have_error:
+            self.write_form(**params)
+            
         else:
             self.redirect('/welcome?username=' + username)
 
