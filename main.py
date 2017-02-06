@@ -108,10 +108,10 @@ class MainPage(webapp2.RequestHandler):
                    verify_error="", email_error=""):
         self.response.out.write(content % {"username": escape_html(username),
                                            "email": escape_html(email),
-                                           "username_error": escape_html(username_error),
-                                           "password_error": escape_html(password_error),
-                                           "verify_error": escape_html(verify_error),
-                                           "email_error": escape_html(email_error)})
+                                           "username_error": username_error,
+                                           "password_error": password_error,
+                                           "verify_error": verify_error,
+                                           "email_error": email_error})
 
     def get(self):
         self.write_form()
@@ -144,7 +144,7 @@ class MainPage(webapp2.RequestHandler):
 
         if have_error:
             self.write_form(**params)
-            
+
         else:
             self.redirect('/welcome?username=' + username)
 
