@@ -134,6 +134,11 @@ class MainPage(webapp2.RequestHandler):
         if not valid_password(password):
             params['password_error'] = "That wasn't a valid password."
             have_error = True
+
+        if not verify:
+            params['verify_error'] = "Your passwords didn't match."
+            have_error = True
+
         elif password != verify:
             params['verify_error'] = "Your passwords didn't match."
             have_error = True
